@@ -23,3 +23,15 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+Cypress.Commands.add('forceVisit', (url) => {
+    cy.get('body').then((body$) => {
+        const appWindow = body$[0].ownerDocument.defaultView;
+        const appIframe = appWindow.parent.document.querySelector('iframe');
+        return new Promise((resolve) => {
+            appIframe.onload = () => resolve();
+            appWindow.location = url;
+        });
+    });
+
+    // cy.window().then(win => win.open(url, '_self'));
+});

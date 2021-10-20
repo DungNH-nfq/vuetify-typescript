@@ -7,6 +7,8 @@
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
+    "cy:open": "cypress open",
+    "cy:test": "cypress run",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -28,6 +30,10 @@
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "@vue/test-utils": "^1.0.3",
+    "cypress": "^8.6.0",
+    "cypress-iframe": "^1.0.1",
+    "cypress-wait-until": "^1.7.1",
+    "cypress-xpath": "^1.6.2",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
     "typescript": "~4.1.5",
