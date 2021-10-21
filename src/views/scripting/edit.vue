@@ -124,6 +124,9 @@
                 <v-btn @click="clear" data-cy="clearBtn">
                   clear
                 </v-btn>
+                <v-btn color="primary" @click.prevent="clear">
+                  Create new version
+                </v-btn>
               </form>
             </validation-observer>
           </v-card-text>
@@ -144,24 +147,6 @@ import {
   setInteractionMode,
 } from "vee-validate";
 
-setInteractionMode("eager");
-extend("digits", {
-  ...digits,
-  message: "{_field_} needs to be {length} digits. ({_value_})",
-});
-extend("required", {
-  ...required,
-  message: "{_field_} can not be empty",
-});
-extend("max", {
-  ...max,
-  message: "{_field_} may not be greater than {length} characters",
-});
-extend("regex", {
-  ...regex,
-  message: "{_field_} {_value_} does not match {regex}",
-});
-
 @Component({
   components: {
     ValidationProvider,
@@ -169,23 +154,34 @@ extend("regex", {
   },
 })
 export default class ScriptingEdit extends Vue {
-  $refs!: {
+  public $refs!: {
     observer: any;
   };
 
-  name = "";
-  id = "";
-  modifyAt = "";
-  script = "";
-  endpoint = "";
-  version = "";
-  type = "";
-  typeItems = ["Process Service", "Webhook"];
+  // data
+  protected name = "";
+  protected id = "";
+  protected script = "";
+  protected modifyAt = "";
+  protected endpoint = "";
+  protected version = "";
+  protected type = "";
+  protected typeItems = ["Process Service", "Webhook"];
 
-  submit() {
+  protected created() {
+    setInteractionMode("eager");
+    this.initCustomValidateRules();
+  }
+
+  protected submit() {
     this.$refs.observer.validate();
   }
-  clear() {
+
+  protected createrNewVersion() {
+    //
+  }
+
+  protected clear() {
     this.name = "";
     this.id = "";
     this.type = "";
@@ -194,6 +190,25 @@ export default class ScriptingEdit extends Vue {
     this.script = "";
     this.endpoint = "";
     this.$refs.observer.reset();
+  }
+
+  private initCustomValidateRules() {
+    extend("digits", {
+      ...digits,
+      message: "{_field_} needs to be {length} digits. ({_value_})",
+    });
+    extend("required", {
+      ...required,
+      message: "{_field_} can not be empty",
+    });
+    extend("max", {
+      ...max,
+      message: "{_field_} may not be greater than {length} characters",
+    });
+    extend("regex", {
+      ...regex,
+      message: "{_field_} {_value_} does not match {regex}",
+    });
   }
 }
 </script>

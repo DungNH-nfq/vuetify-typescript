@@ -84,7 +84,9 @@ export default {
       }));
     },
     computedText() {
-      if (!this.item || !this.item.title) return "";
+      if (!this.item || !this.item.title) {
+        return "";
+      }
 
       let text = "";
 

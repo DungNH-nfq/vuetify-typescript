@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <core-app-drawer />
-    <core-app-bar />
+    <core-app-drawer app />
+    <core-app-bar app />
 
     <!-- Sizes your content based upon application components -->
     <v-main>

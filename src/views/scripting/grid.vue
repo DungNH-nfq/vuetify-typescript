@@ -71,35 +71,37 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "ScriptingEdit",
-  data: () => ({
-    dialog: false,
-    dialogDelete: false,
-    headers: [
-      {
-        text: "Name",
-        align: "start",
-        value: "name",
-      },
-      { text: "Type", value: "type" },
-      { text: "Latest Version", value: "version" },
-      { text: "Last Edited", value: "modifyAt" },
-      { text: "Actions", value: "actions", sortable: false },
-    ],
-    desserts: <any>[],
-    editedIndex: -1,
-    editedItem: <any>{
-      name: "",
-      type: 0,
-      version: 0,
-      modifyAt: 0,
-    },
-    defaultItem: {
-      name: "",
-      type: 0,
-      version: 0,
-      modifyAt: 0,
-    },
-  }),
+  data: () => {
+    return {
+      dialog: false,
+      dialogDelete: false,
+      headers: [
+        {
+          text: "Name",
+          align: "start",
+          value: "name",
+        },
+        { text: "Type", value: "type" },
+        { text: "Latest Version", value: "version" },
+        { text: "Last Edited", value: "modifyAt" },
+        { text: "Actions", value: "actions", sortable: false },
+      ] as any,
+      desserts: [] as any,
+      editedIndex: -1,
+      editedItem: {
+        name: "",
+        type: 0,
+        version: 0,
+        modifyAt: 0,
+      } as any,
+      defaultItem: {
+        name: "",
+        type: 0,
+        version: 0,
+        modifyAt: 0,
+      } as any,
+    };
+  },
 
   computed: {
     formTitle() {
@@ -109,7 +111,6 @@ export default Vue.extend({
 
   watch: {
     dialogDelete(val: boolean) {
-      console.log(val);
       if (val === false) {
         this.closeDelete();
       }
@@ -134,7 +135,9 @@ export default Vue.extend({
     newItem() {
       this.$router.push({ name: "Scripting Edit" });
     },
-    editItem(item: any) {},
+    editItem(item: any) {
+      //
+    },
     deleteItem(item: any) {
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
