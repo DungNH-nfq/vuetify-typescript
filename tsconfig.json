@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    // this enables stricter inference for data properties on `this`
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
@@ -12,31 +13,20 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": [
-      "webpack-env",
-      "jest",
-      "cypress"
-    ],
+    "types": ["webpack-env", "jest", "cypress"],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "tests/e2e/pages/basePage/basePage.js", "tests/e2e/pages/homePage/homePage.js"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "tests/**/*.tsx",
+    "tests/e2e/pages/basePage/basePage.js",
+    "tests/e2e/pages/homePage/homePage.js"
+  ],
+  "exclude": ["node_modules"]
 }
