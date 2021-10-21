@@ -1,6 +1,5 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Home from "@/views/Home.vue";
 
 Vue.use(VueRouter);
 
@@ -8,7 +7,29 @@ const routes: RouteConfig[] = [
   {
     path: "/",
     name: "Home",
-    component: Home,
+    component: () => import("@/views/home/index.vue"),
+    // children: [
+    //   {
+    //     path: "",
+    //     redirect: { name: "Scripting" },
+    //   },
+    // ],
+  },
+  {
+    path: "/scripting",
+    component: () => import("@/views/scripting/index.vue"),
+    children: [
+      {
+        name: "Scripting",
+        path: "",
+        component: () => import("@/views/scripting/grid.vue"),
+      },
+      {
+        name: "Scripting Edit",
+        path: "edit",
+        component: () => import("@/views/scripting/edit.vue"),
+      },
+    ],
   },
   {
     path: "/about",

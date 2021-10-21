@@ -1,11 +1,11 @@
 <template>
-  <div>Welcome to Vuetify</div>
+  <router-view />
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "HelloWorld",
+  name: "Scripting",
 });
 </script>
