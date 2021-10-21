@@ -25,6 +25,7 @@
                     :error-messages="errors"
                     label="Name"
                     required
+                    data-cy="name"
                   ></v-text-field>
                 </validation-provider>
 
@@ -43,6 +44,7 @@
                     :error-messages="errors"
                     label="ID"
                     required
+                    data-cy="id"
                   ></v-text-field>
                 </validation-provider>
 
@@ -58,6 +60,7 @@
                     label="Type"
                     data-vv-name="type"
                     required
+                    data-cy="type"
                   ></v-select>
                 </validation-provider>
 
@@ -73,6 +76,7 @@
                     :error-messages="errors"
                     label="Version"
                     required
+                    data-cy="version"
                   ></v-text-field>
                 </validation-provider>
 
@@ -88,6 +92,7 @@
                     :error-messages="errors"
                     label="Endpoint"
                     required
+                    data-cy="endpoint"
                   ></v-text-field>
                 </validation-provider>
 
@@ -102,6 +107,7 @@
                     label="Script"
                     :error-messages="errors"
                     required
+                    data-cy="script"
                   ></v-textarea>
                 </validation-provider>
 
@@ -111,10 +117,11 @@
                   type="submit"
                   color="primary"
                   :disabled="invalid"
+                  data-cy="submitBtn"
                 >
                   submit
                 </v-btn>
-                <v-btn @click="clear">
+                <v-btn @click="clear" data-cy="clearBtn">
                   clear
                 </v-btn>
               </form>
