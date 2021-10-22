@@ -16,7 +16,7 @@
           <v-card-text>
             <v-data-table
               :headers="headers"
-              :items="desserts"
+              :items="allScripts"
               sort-by="calories"
             >
               <template v-slot:top>
@@ -68,6 +68,9 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { mapGetters } from "vuex";
+
+import ScriptModel from "@/models/script.model";
 
 export default Vue.extend({
   name: "ScriptingEdit",
@@ -86,27 +89,14 @@ export default Vue.extend({
         { text: "Last Edited", value: "modifyAt" },
         { text: "Actions", value: "actions", sortable: false },
       ] as any,
-      desserts: [] as any,
-      editedIndex: -1,
-      editedItem: {
-        name: "",
-        type: 0,
-        version: 0,
-        modifyAt: 0,
-      } as any,
-      defaultItem: {
-        name: "",
-        type: 0,
-        version: 0,
-        modifyAt: 0,
-      } as any,
+      edittedItem: null as any,
     };
   },
 
   computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
-    },
+    ...mapGetters("scripting", {
+      allScripts: "allScripts",
+    }),
   },
 
   watch: {
@@ -117,41 +107,27 @@ export default Vue.extend({
     },
   },
 
-  created() {
-    this.initialize();
-  },
-
   methods: {
-    initialize() {
-      this.desserts = [
-        {
-          name: "Test",
-          type: "Webhook",
-          version: 1.0,
-          modifyAt: "2021.10.21",
-        },
-      ];
-    },
     newItem() {
-      this.$router.push({ name: "Scripting Edit" });
+      this.$router.push({ name: "Scripting Detail" });
     },
     editItem(item: any) {
-      //
+      this.$router.push({ name: "Scripting Detail", params: { item } });
     },
-    deleteItem(item: any) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+    deleteItem(item: ScriptModel) {
+      this.edittedItem = item;
       this.dialogDelete = true;
     },
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
+      this.$store.dispatch("scripting/removeScript", {
+        item: this.edittedItem,
+      });
       this.closeDelete();
     },
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
+        this.edittedItem = null;
       });
     },
   },

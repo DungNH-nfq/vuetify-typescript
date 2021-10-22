@@ -5,10 +5,10 @@
         <base-material-card color="green">
           <template v-slot:heading>
             <div class="display-2 font-weight-light">
-              New scripting
+              {{ title }}
             </div>
             <div class="subtitle-1 font-weight-light">
-              demo sort description
+              {{ description }}
             </div>
           </template>
           <v-card-text>
@@ -20,7 +20,7 @@
                   rules="required|max:30"
                 >
                   <v-text-field
-                    v-model="name"
+                    v-model="data.name"
                     :counter="30"
                     :error-messages="errors"
                     label="Name"
@@ -31,18 +31,16 @@
 
                 <validation-provider
                   v-slot="{ errors }"
-                  name="id"
+                  name="data.id"
                   :rules="{
                     required: true,
-                    digits: 7,
-                    regex: '^(71|72|74|76|81|82|84|85|86|87|88|89)\\d{5}$',
                   }"
                 >
                   <v-text-field
-                    v-model="id"
-                    :counter="7"
+                    v-model="data.id"
                     :error-messages="errors"
                     label="ID"
+                    disabled
                     required
                     data-cy="id"
                   ></v-text-field>
@@ -54,7 +52,7 @@
                   rules="required"
                 >
                   <v-select
-                    v-model="type"
+                    v-model="data.type"
                     :items="typeItems"
                     :error-messages="errors"
                     label="Type"
@@ -72,7 +70,7 @@
                   }"
                 >
                   <v-text-field
-                    v-model="version"
+                    v-model="data.version"
                     :error-messages="errors"
                     label="Version"
                     required
@@ -88,7 +86,7 @@
                   }"
                 >
                   <v-text-field
-                    v-model="version"
+                    v-model="data.endpoint"
                     :error-messages="errors"
                     label="Endpoint"
                     required
@@ -103,7 +101,7 @@
                 >
                   <v-textarea
                     counter
-                    v-model="script"
+                    v-model="data.scriptContent"
                     label="Script"
                     :error-messages="errors"
                     required
@@ -124,7 +122,10 @@
                 <v-btn @click="clear" data-cy="clearBtn">
                   clear
                 </v-btn>
-                <v-btn color="primary" @click.prevent="clear">
+                <v-btn @click="cancel">
+                  Cancel
+                </v-btn>
+                <v-btn color="primary" @click.prevent="createrNewVersion">
                   Create new version
                 </v-btn>
               </form>
@@ -147,10 +148,16 @@ import {
   setInteractionMode,
 } from "vee-validate";
 
+import ScriptModel from "@/models/script.model";
+import { ScriptType } from "@/constants/script_type.constant";
+
 @Component({
   components: {
     ValidationProvider,
     ValidationObserver,
+  },
+  props: {
+    item: { type: ScriptModel, default: null },
   },
 })
 export default class ScriptingEdit extends Vue {
@@ -159,36 +166,38 @@ export default class ScriptingEdit extends Vue {
   };
 
   // data
-  protected name = "";
-  protected id = "";
-  protected script = "";
-  protected modifyAt = "";
-  protected endpoint = "";
-  protected version = "";
-  protected type = "";
-  protected typeItems = ["Process Service", "Webhook"];
+  protected title: string = "New Scripting";
+  protected description: string = "sort description";
+  protected data: ScriptModel = new ScriptModel();
+  protected typeItems = [
+    ScriptType.PROCESS_SERVICE,
+    ScriptType.WEBHOOK,
+    ScriptType.OTHER,
+  ];
 
   protected created() {
     setInteractionMode("eager");
+    this.initData();
     this.initCustomValidateRules();
   }
 
-  protected submit() {
-    this.$refs.observer.validate();
+  protected async submit() {
+    if (this.$refs.observer.validate()) {
+      await this.$store.dispatch("scripting/addScript", this.data);
+      this.$router.push({ name: "Scripting" });
+    }
   }
 
   protected createrNewVersion() {
-    //
+    this.data.generateNewVersion();
+  }
+
+  protected cancel() {
+    this.$router.push({ name: "Scripting" });
   }
 
   protected clear() {
-    this.name = "";
-    this.id = "";
-    this.type = "";
-    this.version = "";
-    this.modifyAt = "";
-    this.script = "";
-    this.endpoint = "";
+    this.data = new ScriptModel();
     this.$refs.observer.reset();
   }
 
@@ -209,6 +218,15 @@ export default class ScriptingEdit extends Vue {
       ...regex,
       message: "{_field_} {_value_} does not match {regex}",
     });
+  }
+
+  private initData() {
+    const item: any = this.$route.params.item;
+
+    if (item) {
+      this.data = item as ScriptModel;
+      this.title = `Edit scriptting name:${this.data.name}`;
+    }
   }
 }
 </script>

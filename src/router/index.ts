@@ -25,7 +25,7 @@ const routes: RouteConfig[] = [
         component: () => import("@/views/scripting/grid.vue"),
       },
       {
-        name: "Scripting Edit",
+        name: "Scripting Detail",
         path: "edit",
         component: () => import("@/views/scripting/edit.vue"),
       },

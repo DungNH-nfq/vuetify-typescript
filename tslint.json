@@ -1,6 +1,6 @@
 {
   "defaultSeverity": "warning",
-  "extends": ["tslint:recommended"],
+  "extends": ["tslint:recommended", "tslint:latest", "tslint-config-prettier"],
   "linterOptions": {
     "exclude": ["node_modules/**"]
   },
@@ -23,6 +23,9 @@
         "singleline": "never"
       }
     ],
-    "whitespace": [true, "check-branch", "check-operator"]
+    "whitespace": [true, "check-branch", "check-operator"],
+    "no-submodule-imports": false,
+    "no-implicit-dependencies": false,
+    "prefer-object-spread": false
   }
 }
