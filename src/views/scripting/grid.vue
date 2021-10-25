@@ -6,7 +6,7 @@
           <template v-slot:heading>
             <div
               class="display-2 font-weight-light"
-              v-text="$vuetify.lang.t('$vuetify.scripting.title_grid')"
+              v-text="$vuetify.lang.t('$vuetify.scripting.title_grid')" data-cy="header"
             />
           </template>
 
@@ -83,12 +83,14 @@
                           color="blue darken-1"
                           text
                           @click="closeExecuteScriptDialog"
+                          data-cy="cancelBtn"
                           >Cancel</v-btn
                         >
                         <v-btn
                           color="blue darken-1"
                           text
                           @click.prevent="uploadScript"
+                          data-cy="uploadBtn"
                           >Upload</v-btn
                         >
                         <v-btn
@@ -96,6 +98,7 @@
                           text
                           :disabled="isNotReadyToExecuteScript"
                           @click.prevent="excuteScript"
+                          data-cy="runScriptBtn"
                           >Run</v-btn
                         >
                       </v-card-actions>
@@ -104,13 +107,13 @@
                 </v-toolbar>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-icon small @click="editItem(item)">
+                <v-icon small @click="editItem(item)" data-cy="editBtn">
                   mdi-pencil
                 </v-icon>
-                <v-icon small class="mx-2" @click="deleteItem(item)">
+                <v-icon small class="mx-2" @click="deleteItem(item)" data-cy="deleteBtn">
                   mdi-delete
                 </v-icon>
-                <v-icon small @click="runScript(item)">
+                <v-icon small @click="runScript(item)" data-cy="playBtn">
                   mdi-play-speed
                 </v-icon>
               </template>

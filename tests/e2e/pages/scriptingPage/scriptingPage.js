@@ -14,13 +14,16 @@ export class ScriptingPage {
         this.scriptScriptDataInput = '[data-cy=script]';
         this.submitButton = '[data-cy=submitBtn]';
         this.clearButton = '[data-cy=clearBtn]';
+        this.playButton = '[data-cy=playBtn]';
+        this.uploadScriptButton = '[data-cy=uploadBtn]';
+        this.runScriptButton = '[data-cy=runScriptBtn]';
         this.subtitle = 'div.subtitle-1.font-weight-light';
     }
 
 
     goToScriptingPage() {
         cy.get(this.scriptingPageItem).click();
-        cy.get(this.pageName).should('have.text', ' List of scripting ');
+        cy.get(this.pageName).should('have.text', 'List of scripting');
         return this;
     }
 
@@ -40,7 +43,7 @@ export class ScriptingPage {
         cy.fixture('payload.txt').then((script) => {
             cy.get(this.scriptScriptDataInput).type(script);
         })
-        cy.get(this.subtitle).click();
+        cy.get(this.pageName).click();
         cy.get(this.submitButton).click();
         return this;
     }
@@ -48,6 +51,12 @@ export class ScriptingPage {
     verifyScriptDetailsInGrid(){
         cy.get('table').contains('td', 'This is Cypress Test').should('be.visible');;
         return this;
+    }
+
+    runTheScript(){
+        cy.get(this.playButton).click();
+        cy.get(this.uploadScriptButton).click();
+        cy.get(this.runScriptButton).click();
     }
 
 }
