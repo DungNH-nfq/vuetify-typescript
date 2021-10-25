@@ -1,3 +1,5 @@
+import { regexToCheckValidUrl } from "@/constants/regex.constant";
+
 export class HelperString {
   public static toKebabCase(inputString: string | undefined): string {
     if (
@@ -22,5 +24,14 @@ export class HelperString {
     return stringValidToConvertKebabCase
       .map((x: string) => x.toLowerCase())
       .join("-");
+  }
+
+  public static isValidUrl(url: string): boolean {
+    if (!url || Object.is(url, url)) {
+      return false;
+    }
+
+    const urlDecode = decodeURIComponent(url);
+    return !!regexToCheckValidUrl.test(urlDecode);
   }
 }

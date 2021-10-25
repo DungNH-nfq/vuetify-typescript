@@ -14,7 +14,8 @@
             <v-data-table
               :headers="headers"
               :items="allScripts"
-              sort-by="calories"
+              sort-by="name"
+              id="script_datatable"
             >
               <template v-slot:top>
                 <v-toolbar flat>
@@ -49,7 +50,7 @@
                   <v-dialog
                     v-model="dialogExecute"
                     scrollable
-                    max-width="500px"
+                    max-width="800px"
                   >
                     <v-card>
                       <v-card-title
@@ -58,13 +59,22 @@
                       />
                       <v-divider></v-divider>
                       <div class="my-2" />
+                      <v-card-text>
+                        <v-textarea
+                          no-resize
+                          :value="logExecuteScript"
+                          rows="10"
+                          label="'Log Excute Script'"
+                        />
+                      </v-card-text>
                       <v-card-text style="height: 300px;">
                         <v-textarea
                           outlined
                           disabled
                           dense
-                          :value="resultExecutedScript"
+                          rows="10"
                           label="Response"
+                          :value="resultExecutedScript"
                         />
                       </v-card-text>
                       <v-divider></v-divider>
@@ -78,7 +88,14 @@
                         <v-btn
                           color="blue darken-1"
                           text
-                          @click="confirmExecutingScript"
+                          @click.prevent="uploadScript"
+                          >Upload</v-btn
+                        >
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          :disabled="isNotReadyToExecuteScript"
+                          @click.prevent="excuteScript"
                           >Run</v-btn
                         >
                       </v-card-actions>
@@ -93,7 +110,7 @@
                 <v-icon small class="mx-2" @click="deleteItem(item)">
                   mdi-delete
                 </v-icon>
-                <v-icon small @click="executingScript(item)">
+                <v-icon small @click="runScript(item)">
                   mdi-play-speed
                 </v-icon>
               </template>
@@ -110,7 +127,18 @@ import Vue from "vue";
 import { mapGetters } from "vuex";
 import axios from "axios";
 
+// Utilities
+import { HelperFiles } from "@/helpers/files";
+import { HelperUtils } from "@/helpers/utils";
+// Model
 import ScriptModel from "@/models/script.model";
+
+const hostAPIDefault = "http://91cd-123-19-103-56.ngrok.io";
+const endpointToUploadScript = `/upload`;
+const endpointToGetScriptStatus = `/getfnbyid?`;
+const endPointToExcuteScript = `?`;
+const intervalTimeoutToCheckScriptStatus = 3000;
+const scriptStatusIsReadyToExecute = "running";
 
 export default Vue.extend({
   name: "ScriptingEdit",
@@ -131,6 +159,9 @@ export default Vue.extend({
       ] as any,
       edittedItem: null as any,
       resultExecutedScript: "",
+      logExecuteScript: "",
+      intervalIdToCheckScriptStatus: null as any,
+      isNotReadyToExecuteScript: true,
     };
   },
   computed: {
@@ -176,12 +207,9 @@ export default Vue.extend({
     getTitleOfExecuteScript() {
       return `You are executing the script "${this.edittedItem?.name}"`;
     },
-    executingScript(item: ScriptModel) {
+    runScript(item: ScriptModel) {
       this.edittedItem = item;
       this.dialogExecute = true;
-    },
-    confirmExecutingScript(item: ScriptModel) {
-      this.runScript(item);
     },
     closeExecuteScriptDialog() {
       this.dialogExecute = false;
@@ -190,15 +218,104 @@ export default Vue.extend({
         this.resultExecutedScript = "";
       });
     },
-    async runScript(item: ScriptModel): Promise<void> {
-      if (item) {
-        this.resultExecutedScript = "ok";
+    async uploadScript(): Promise<void> {
+      const { scriptContent } = this.edittedItem;
+      const fileToUpload = HelperFiles.generateFile(scriptContent);
+
+      this.logExecuteScript = `========= ${new Date()} ========= \n`;
+      this.logExecuteScript += `- Imported script to file name: ${fileToUpload?.name} \n`;
+      this.logExecuteScript += `- Uploading script to server \n`;
+
+      const functionId = await this.uploadScriptToCloud(fileToUpload);
+
+      if (!functionId) {
+        this.logExecuteScript += `- Upload script failed. Stopped excute this script\n`;
+        return;
       }
 
-      return new Promise<void>((resolve) => {
-        this.resultExecutedScript = "unexecute";
-        resolve();
+      this.logExecuteScript += `- Uploaded script to server with function id is ${functionId} \n`;
+      const isReadyToExecuteScript = await this.checkScriptIsReadyToExcute(
+        functionId
+      );
+
+      this.isNotReadyToExecuteScript = isReadyToExecuteScript === false;
+
+      if (isReadyToExecuteScript) {
+        this.logExecuteScript += `- Excuting script with function id is ${functionId}\n`;
+        return;
+      }
+
+      this.logExecuteScript += `- Build script have trouble. Stopped excute this script\n`;
+    },
+    async uploadScriptToCloud(
+      fileAttachment: File | undefined
+    ): Promise<string> {
+      if (!fileAttachment) {
+        return "";
+      }
+
+      const functionId = HelperUtils.uuidV4();
+      const bodyFormData = new FormData();
+
+      bodyFormData.append("fnid", functionId);
+      bodyFormData.append("sampleFile", fileAttachment, "worker.js");
+
+      const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
+      const url = `${hostAPI}${endpointToUploadScript}`;
+      const headers = { "Content-Type": "multipart/form-data" };
+      const method = "post";
+
+      return axios({
+        url,
+        headers,
+        method,
+        data: bodyFormData,
+      })
+        .then((response) => {
+          console.log({ response });
+          return functionId;
+        })
+        .catch((error) => {
+          console.log({ error });
+          return "";
+        });
+    },
+    async checkScriptIsReadyToExcute(functionId: string): Promise<boolean> {
+      return new Promise<boolean>((resolve) => {
+        this.intervalIdToCheckScriptStatus = setInterval(async () => {
+          const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
+          const url = `${hostAPI}${endpointToGetScriptStatus}fnid=${functionId}`;
+
+          try {
+            const { container_status } = await axios.get<object, any>(url);
+
+            if (container_status === scriptStatusIsReadyToExecute) {
+              clearInterval(this.intervalIdToCheckScriptStatus);
+              resolve(true);
+            }
+          } catch (error) {
+            console.error(error);
+            resolve(false);
+          }
+        }, intervalTimeoutToCheckScriptStatus);
       });
+    },
+    async excuteScript(functionId: string): Promise<void> {
+      if (!functionId) {
+        this.resultExecutedScript = "Not existing function id";
+        return Promise.resolve();
+      }
+
+      try {
+        const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
+        const url = `${hostAPI}${endPointToExcuteScript}${functionId}`;
+        const response = await axios.get(url);
+
+        this.resultExecutedScript = JSON.stringify(response);
+        this.logExecuteScript += `- Excuted script with function id is ${functionId}\n`;
+      } catch (error) {
+        this.logExecuteScript += `- Excute script have trouble. Stopped excute this script\n`;
+      }
     },
   },
 });
