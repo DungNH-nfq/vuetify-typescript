@@ -4,7 +4,7 @@
       <v-col cols="12">
         <base-material-card color="info">
           <template v-slot:heading>
-            <div class="display-2 font-weight-light">
+            <div class="display-2 font-weight-light" data-cy = "header">
               List of scripting
             </div>
 
@@ -18,6 +18,7 @@
               :headers="headers"
               :items="allScripts"
               sort-by="calories"
+              data-cy="data-test"
             >
               <template v-slot:top>
                 <v-toolbar flat>
@@ -51,10 +52,10 @@
                 </v-toolbar>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="editItem(item)">
+                <v-icon small class="mr-2" @click="editItem(item)" data-cy="edit">
                   mdi-pencil
                 </v-icon>
-                <v-icon small @click="deleteItem(item)">
+                <v-icon small @click="deleteItem(item)" data-cy="delete">
                   mdi-delete
                 </v-icon>
               </template>

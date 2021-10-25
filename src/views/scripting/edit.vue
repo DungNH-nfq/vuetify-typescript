@@ -4,7 +4,7 @@
       <v-col cols="12">
         <base-material-card color="green">
           <template v-slot:heading>
-            <div class="display-2 font-weight-light">
+            <div class="display-2 font-weight-light" data-cy ="header">
               {{ title }}
             </div>
             <div class="subtitle-1 font-weight-light">

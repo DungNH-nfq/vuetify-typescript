@@ -1,0 +1,13 @@
+const axios = require('axios');
+
+module.exports = {
+	start: function () {
+		return axios.get('https://jsonplaceholder.typicode.com/users?_limit=2')
+		.then(response => {
+		    return response.data;
+		})
+		.catch(error => {
+			console.log(error);
+		});
+	}
+}

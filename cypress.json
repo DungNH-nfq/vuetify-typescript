@@ -1,4 +1,8 @@
 {
   "pluginsFile": "tests/e2e/plugins/index.js",
-  "baseUrl": "http://192.168.31.9:8080/"
+  "baseUrl": "http://192.168.1.23:8080/",
+  "responseTimeout": 50000,
+  "pageLoadTimeout": 100000,
+  "defaultCommandTimeout": 30000,
+  "requestTimeout": 30000
 }
