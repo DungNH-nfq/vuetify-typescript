@@ -7,9 +7,6 @@
             <div class="display-2 font-weight-light">
               {{ title }}
             </div>
-            <div class="subtitle-1 font-weight-light">
-              {{ description }}
-            </div>
           </template>
           <v-card-text>
             <validation-observer ref="observer" v-slot="{ invalid }">
@@ -83,6 +80,7 @@
                   name="endpoint"
                   :rules="{
                     required: true,
+                    regexCheckURL: regexToCheckValidUrl,
                   }"
                 >
                   <v-text-field
@@ -150,6 +148,7 @@ import {
 
 import ScriptModel from "@/models/script.model";
 import { ScriptType } from "@/constants/script_type.constant";
+import { regexToCheckValidUrl } from "@/constants/regex.constant";
 
 @Component({
   components: {
@@ -174,6 +173,10 @@ export default class ScriptingEdit extends Vue {
     ScriptType.WEBHOOK,
     ScriptType.OTHER,
   ];
+
+  get regexToCheckValidUrl() {
+    return regexToCheckValidUrl;
+  }
 
   protected created() {
     setInteractionMode("eager");
@@ -214,9 +217,9 @@ export default class ScriptingEdit extends Vue {
       ...max,
       message: "{_field_} may not be greater than {length} characters",
     });
-    extend("regex", {
+    extend("regexCheckURL", {
       ...regex,
-      message: "{_field_} {_value_} does not match {regex}",
+      message: "{_field_} value does not match URL",
     });
   }
 

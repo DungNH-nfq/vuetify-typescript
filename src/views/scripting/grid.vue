@@ -4,13 +4,10 @@
       <v-col cols="12">
         <base-material-card color="info">
           <template v-slot:heading>
-            <div class="display-2 font-weight-light">
-              List of scripting
-            </div>
-
-            <div class="subtitle-1 font-weight-light">
-              demo sort description
-            </div>
+            <div
+              class="display-2 font-weight-light"
+              v-text="$vuetify.lang.t('$vuetify.scripting.title_grid')"
+            />
           </template>
 
           <v-card-text>
@@ -48,14 +45,56 @@
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
+
+                  <v-dialog
+                    v-model="dialogExecute"
+                    scrollable
+                    max-width="500px"
+                  >
+                    <v-card>
+                      <v-card-title
+                        class="text-h5"
+                        v-text="getTitleOfExecuteScript()"
+                      />
+                      <v-divider></v-divider>
+                      <div class="my-2" />
+                      <v-card-text style="height: 300px;">
+                        <v-textarea
+                          outlined
+                          disabled
+                          dense
+                          :value="resultExecutedScript"
+                          label="Response"
+                        />
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="closeExecuteScriptDialog"
+                          >Cancel</v-btn
+                        >
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="confirmExecutingScript"
+                          >Run</v-btn
+                        >
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </v-toolbar>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="editItem(item)">
+                <v-icon small @click="editItem(item)">
                   mdi-pencil
                 </v-icon>
-                <v-icon small @click="deleteItem(item)">
+                <v-icon small class="mx-2" @click="deleteItem(item)">
                   mdi-delete
+                </v-icon>
+                <v-icon small @click="executingScript(item)">
+                  mdi-play-speed
                 </v-icon>
               </template>
             </v-data-table>
@@ -69,6 +108,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapGetters } from "vuex";
+import axios from "axios";
 
 import ScriptModel from "@/models/script.model";
 
@@ -76,8 +116,8 @@ export default Vue.extend({
   name: "ScriptingEdit",
   data: () => {
     return {
-      dialog: false,
       dialogDelete: false,
+      dialogExecute: false,
       headers: [
         {
           text: "Name",
@@ -90,23 +130,26 @@ export default Vue.extend({
         { text: "Actions", value: "actions", sortable: false },
       ] as any,
       edittedItem: null as any,
+      resultExecutedScript: "",
     };
   },
-
   computed: {
     ...mapGetters("scripting", {
       allScripts: "allScripts",
     }),
   },
-
   watch: {
     dialogDelete(val: boolean) {
       if (val === false) {
         this.closeDelete();
       }
     },
+    dialogExecute(val: boolean) {
+      if (val === false) {
+        this.closeExecuteScriptDialog();
+      }
+    },
   },
-
   methods: {
     newItem() {
       this.$router.push({ name: "Scripting Detail" });
@@ -128,6 +171,33 @@ export default Vue.extend({
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.edittedItem = null;
+      });
+    },
+    getTitleOfExecuteScript() {
+      return `You are executing the script "${this.edittedItem?.name}"`;
+    },
+    executingScript(item: ScriptModel) {
+      this.edittedItem = item;
+      this.dialogExecute = true;
+    },
+    confirmExecutingScript(item: ScriptModel) {
+      this.runScript(item);
+    },
+    closeExecuteScriptDialog() {
+      this.dialogExecute = false;
+      this.$nextTick(() => {
+        this.edittedItem = null;
+        this.resultExecutedScript = "";
+      });
+    },
+    async runScript(item: ScriptModel): Promise<void> {
+      if (item) {
+        this.resultExecutedScript = "ok";
+      }
+
+      return new Promise<void>((resolve) => {
+        this.resultExecutedScript = "unexecute";
+        resolve();
       });
     },
   },
