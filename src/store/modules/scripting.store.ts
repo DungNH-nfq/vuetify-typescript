@@ -42,7 +42,6 @@ export const scripting: Module<any, RootState> = {
       }
     },
     removeScript(context, { item }) {
-      console.log(item);
       if (item) {
         context.commit("removeScript", item);
       }

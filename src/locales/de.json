@@ -1,3 +1,6 @@
 {
-  "welcome": "DE - Vuetify MD"
+  "welcome": "DE - Vuetify MD",
+  "scripting": {
+    "title_grid": "Liste der Skripte "
+  }
 }

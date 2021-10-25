@@ -46,9 +46,9 @@
 </template>
 
 <script>
-// Utilities
-import kebabCase from "lodash/kebabCase";
 import { mapState } from "vuex";
+// Utilities
+import { HelperString } from "@/helpers/string";
 
 export default {
   name: "ItemGroup",
@@ -107,7 +107,7 @@ export default {
         .filter((item) => item.to)
         .map((item) => {
           const parent = item.group || this.item.group;
-          let group = `${parent}/${kebabCase(item.to)}`;
+          let group = `${parent}/${HelperString.toKebabCase(item.to)}`;
 
           if (item.children) {
             group = `${group}|${this.genGroup(item.children)}`;
