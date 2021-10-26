@@ -39,7 +39,7 @@ export class ScriptingPage {
         cy.get(this.scriptTypeButton).click()
         cy.get(this.scriptTypeContent).eq(0).click();
         cy.get(this.scriptVersionInput).type('1');
-        cy.get(this.scriptEndpointInput).type('http://google.com');
+        // cy.get(this.scriptEndpointInput).type('http://google.com');
         cy.fixture('payload.txt').then((script) => {
             cy.get(this.scriptScriptDataInput).type(script);
         })
@@ -55,8 +55,13 @@ export class ScriptingPage {
 
     runTheScript(){
         cy.get(this.playButton).click();
-        cy.get(this.uploadScriptButton).click();
+        // cy.get(this.uploadScriptButton).click();
         cy.get(this.runScriptButton).click();
+        return this;
+    }
+
+    editScript(scriptName){
+        cy.get()
     }
 
 }

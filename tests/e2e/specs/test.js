@@ -12,6 +12,7 @@ describe('My First Test', () => {
     scriptingPage.goToScriptingPage()
       .clickAddNewScriptingButton()
       .addNewScripting()
-      .verifyScriptDetailsInGrid();
+      .verifyScriptDetailsInGrid()
+      .runTheScript();
   })
 })
