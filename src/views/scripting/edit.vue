@@ -14,7 +14,7 @@
                 <v-text-field
                   v-model="data.functionId"
                   disabled
-                  label="FunctionId"
+                  label="Id"
                   data-cy="functionId"
                 />
                 <validation-provider
@@ -241,7 +241,7 @@ export default class ScriptingEdit extends Vue {
 
     const newFunctionId = (this as any).lastFunctionId + 1;
     this.data.functionId = newFunctionId;
-    this.data.endpoint = `${process.env.VUE_APP_API}?fnid=${newFunctionId}`;
+    this.data.endpoint = `${process.env.VUE_APP_API}?fnid=${this.data.functionId}`;
   }
 }
 </script>

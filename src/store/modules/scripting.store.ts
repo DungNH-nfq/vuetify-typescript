@@ -3,7 +3,7 @@ import ScriptModel from "@/models/script.model";
 import { RootState } from "../types";
 
 const namespaced: boolean = true;
-const initFunctionId = 205;
+const initFunctionId = 123;
 
 export const scripting: Module<any, RootState> = {
   namespaced,
