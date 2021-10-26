@@ -61,13 +61,6 @@
                       <v-divider></v-divider>
                       <div class="my-2" />
                       <v-card-text>
-                        <v-text-field
-                          v-model="functionId"
-                          label="Function ID"
-                        />
-                      </v-card-text>
-                      <div class="my-1" />
-                      <v-card-text>
                         <v-textarea
                           no-resize
                           :value="logExecuteScript"
@@ -89,33 +82,23 @@
                       <v-card-actions>
                         <v-btn
                           color="blue darken-1"
-                          text
                           @click="closeExecuteScriptDialog"
                           data-cy="cancelBtn"
-                          >Cancel</v-btn
-                        >
-                        <v-btn
-                          color="blue darken-1"
-                          text
-                          @click.prevent="uploadScript"
-                          data-cy="uploadBtn"
-                          v-text="'Deploy'"
+                          v-text="'Cancel'"
                         />
                         <v-btn
                           color="blue darken-1"
-                          text
-                          @click.prevent="stopDeploy"
-                        >
-                          Stop Deploy
-                        </v-btn>
+                          @click.prevent="excuteScript"
+                          data-cy="uploadBtn"
+                          :disabled="isRunning"
+                          v-text="'Run'"
+                        />
                         <v-btn
                           color="blue darken-1"
-                          text
-                          :disabled="isNotReadyToExecuteScript"
-                          @click.prevent="excuteScript"
-                          data-cy="runScriptBtn"
-                          >Run</v-btn
-                        >
+                          @click.prevent="stopDeploy"
+                          :disabled="isRunning === false"
+                          v-text="'Stop'"
+                        />
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -156,9 +139,9 @@ import { HelperFiles } from "@/helpers/files";
 import ScriptModel from "@/models/script.model";
 
 const hostAPIDefault = process.env.VUE_APP_API;
-const endpointToUploadScript = `/upload`;
-const endpointToGetScriptStatus = `/getfnbyid?`;
-const endPointToExcuteScript = `/`;
+const endpointToUploadScript = `/api/upload`;
+const endpointToGetScriptStatus = `/api/getfnbyid?`;
+const endPointToExcuteScript = `/api/`;
 const intervalTimeoutToCheckScriptStatus = 3000;
 const scriptStatusIsReadyToExecute = "running";
 
@@ -183,7 +166,7 @@ export default Vue.extend({
       resultExecutedScript: "",
       logExecuteScript: "",
       intervalIdToCheckScriptStatus: null as any,
-      isNotReadyToExecuteScript: true,
+      isRunning: false,
       functionId: "",
     };
   },
@@ -242,7 +225,8 @@ export default Vue.extend({
         this.resultExecutedScript = "";
       });
     },
-    async uploadScript(): Promise<void> {
+
+    async uploadScript(): Promise<boolean> {
       const { scriptContent } = this.edittedItem;
       const fileToUpload = HelperFiles.generateFile(scriptContent);
 
@@ -254,7 +238,7 @@ export default Vue.extend({
 
       if (!functionId) {
         this.logExecuteScript += `- Upload script failed. Stopped excute this script\n`;
-        return;
+        return false;
       }
 
       this.logExecuteScript += `- Uploaded script to server with function id is: ${functionId} \n`;
@@ -262,14 +246,13 @@ export default Vue.extend({
         functionId
       );
 
-      this.isNotReadyToExecuteScript = isReadyToExecuteScript === false;
-
       if (isReadyToExecuteScript) {
         this.logExecuteScript += `- Deploy container is ready to excute with function id is: ${functionId}\n`;
-        return;
+        return true;
       }
 
       this.logExecuteScript += `- Build script have trouble. Stopped excute this script\n`;
+      return false;
     },
     async uploadScriptToCloud(
       fileAttachment: File | undefined
@@ -278,13 +261,13 @@ export default Vue.extend({
         return "";
       }
 
-      const functionId = this.functionId;
+      const functionId = this.edittedItem?.functionId;
       const bodyFormData = new FormData();
 
       bodyFormData.append("fnid", functionId);
       bodyFormData.append("sampleFile", fileAttachment, "worker.js");
 
-      const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
+      const hostAPI = ""; //this.edittedItem.endpoint || hostAPIDefault;
       const url = `${hostAPI}${endpointToUploadScript}`;
       const headers = {
         "Content-Type": "multipart/form-data",
@@ -308,17 +291,24 @@ export default Vue.extend({
     async checkScriptIsReadyToExcute(functionId: string): Promise<boolean> {
       return new Promise<boolean>((resolve) => {
         this.intervalIdToCheckScriptStatus = setInterval(async () => {
-          const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
+          const hostAPI = ""; //this.edittedItem.endpoint || hostAPIDefault;
           const url = `${hostAPI}${endpointToGetScriptStatus}fnid=${functionId}`;
 
           try {
             const response = await axios.get<object, any>(url);
-            const containerStatus = response?.data.container_status;
+            const { data } = response;
 
-            this.logExecuteScript += `- Check deploy status is: ${containerStatus}\n`;
+            if (data === "Function Not Found") {
+              clearInterval(this.intervalIdToCheckScriptStatus);
+              resolve(false);
+            }
+
+            const { container_status } = data;
+
+            this.logExecuteScript += `- Check deploy status is: ${container_status}\n`;
             if (
-              containerStatus === scriptStatusIsReadyToExecute ||
-              containerStatus === "created"
+              container_status === scriptStatusIsReadyToExecute ||
+              container_status === "created"
             ) {
               clearInterval(this.intervalIdToCheckScriptStatus);
               resolve(true);
@@ -332,24 +322,47 @@ export default Vue.extend({
     },
     stopDeploy() {
       clearInterval(this.intervalIdToCheckScriptStatus);
-      this.isNotReadyToExecuteScript = false;
+      this.isRunning = false;
     },
-    async excuteScript(functionId: string): Promise<void> {
+    async excutingScript(functionId: string): Promise<void> {
       if (!functionId) {
         this.resultExecutedScript = "Not existing function id";
+        this.isRunning = false;
         return Promise.resolve();
       }
 
       try {
-        const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
-        const url = `${hostAPI}${endPointToExcuteScript}?fnid=${this.functionId}`;
+        const hostAPI = ""; // this.edittedItem.endpoint || hostAPIDefault;
+        const url = `${hostAPI}${endPointToExcuteScript}?fnid=${functionId}`;
         const response = await axios.get(url);
 
         this.resultExecutedScript = JSON.stringify(response.data);
         this.logExecuteScript += `- Excuting script with function id is: ${this.functionId}. Status is: ${response.status}\n`;
       } catch (error) {
         this.logExecuteScript += `- Script excute have trouble. Stopped excute this script\n`;
+      } finally {
+        this.isRunning = false;
       }
+    },
+    async excuteScript(): Promise<void> {
+      this.isRunning = true;
+
+      const { functionId } = this.edittedItem;
+      const isReadyToExecuteScript = await this.checkScriptIsReadyToExcute(
+        functionId
+      );
+      const isNotReadyToExecuteScript = isReadyToExecuteScript === false;
+
+      if (isNotReadyToExecuteScript) {
+        const isUploadScriptSuccess = await this.uploadScript();
+
+        if (isUploadScriptSuccess === false) {
+          this.isRunning = false;
+          return;
+        }
+      }
+
+      this.excutingScript(functionId);
     },
   },
 });

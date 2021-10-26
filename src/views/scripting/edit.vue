@@ -4,13 +4,19 @@
       <v-col cols="12">
         <base-material-card color="green">
           <template v-slot:heading>
-            <div class="display-2 font-weight-light" data-cy ="header">
+            <div class="display-2 font-weight-light" data-cy="header">
               {{ title }}
             </div>
           </template>
           <v-card-text>
             <validation-observer ref="observer" v-slot="{ invalid }">
               <form @submit.prevent="submit">
+                <v-text-field
+                  v-model="data.functionId"
+                  disabled
+                  label="FunctionId"
+                  data-cy="functionId"
+                />
                 <validation-provider
                   v-slot="{ errors }"
                   name="Name"
@@ -26,7 +32,7 @@
                   ></v-text-field>
                 </validation-provider>
 
-                <validation-provider
+                <!-- <validation-provider
                   v-slot="{ errors }"
                   name="data.id"
                   :rules="{
@@ -40,7 +46,7 @@
                     required
                     data-cy="id"
                   ></v-text-field>
-                </validation-provider>
+                </validation-provider> -->
 
                 <validation-provider
                   v-slot="{ errors }"
@@ -86,7 +92,7 @@
                     v-model="data.endpoint"
                     :error-messages="errors"
                     label="Endpoint"
-                    required
+                    disabled
                     data-cy="endpoint"
                   ></v-text-field>
                 </validation-provider>
@@ -136,6 +142,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { mapGetters } from "vuex";
 import Component from "vue-class-component";
 import { required, digits, max, regex } from "vee-validate/dist/rules";
 import {
@@ -154,8 +161,10 @@ import { regexToCheckValidUrl } from "@/constants/regex.constant";
     ValidationProvider,
     ValidationObserver,
   },
-  props: {
-    item: { type: ScriptModel, default: null },
+  computed: {
+    ...mapGetters("scripting", {
+      lastFunctionId: "lastFunctionId",
+    }),
   },
 })
 export default class ScriptingEdit extends Vue {
@@ -229,6 +238,10 @@ export default class ScriptingEdit extends Vue {
       this.data = item as ScriptModel;
       this.title = `Edit scriptting name:${this.data.name}`;
     }
+
+    const newFunctionId = (this as any).lastFunctionId + 1;
+    this.data.functionId = newFunctionId;
+    this.data.endpoint = `${process.env.VUE_APP_API}?fnid=${newFunctionId}`;
   }
 }
 </script>

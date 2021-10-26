@@ -3,6 +3,7 @@ import ScriptModel from "@/models/script.model";
 import { RootState } from "../types";
 
 const namespaced: boolean = true;
+const initFunctionId = 205;
 
 export const scripting: Module<any, RootState> = {
   namespaced,
@@ -12,6 +13,18 @@ export const scripting: Module<any, RootState> = {
   getters: {
     allScripts(state): ScriptModel[] {
       return state.scripting;
+    },
+    lastFunctionId(state): number {
+      if (!state.scripting || state.scripting.length <= 0) {
+        return initFunctionId;
+      }
+
+      return Math.max.apply(
+        Math,
+        state.scripting.map((o: ScriptModel) => {
+          return o.functionId;
+        })
+      );
     },
   },
   mutations: {
