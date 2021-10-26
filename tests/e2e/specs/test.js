@@ -9,10 +9,12 @@ describe('My First Test', () => {
   })
 
   it('Create a new Script', () => {
+    const scriptName = 'This is Cypress';
     scriptingPage.goToScriptingPage()
       .clickAddNewScriptingButton()
-      .addNewScripting()
-      .verifyScriptDetailsInGrid()
+      .addNewScripting(scriptName)
+      .verifyScriptDetailsInGrid(scriptName)
+      .editScript(scriptName)
       .runTheScript();
   })
 })
