@@ -12,7 +12,7 @@ export default class ScriptModel {
   public modifyAt: Date;
 
   constructor() {
-    this.id = HelperUtils.uuidV4();
+    this.id = "";
     this.name = "";
     this.endpoint = "";
     this.scriptContent = "";

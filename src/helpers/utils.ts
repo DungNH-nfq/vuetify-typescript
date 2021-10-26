@@ -1,3 +1,5 @@
+import { random } from "cypress/types/lodash";
+
 export class HelperUtils {
   public static uuidV4(): string {
     const uuidV4Template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
@@ -12,5 +14,9 @@ export class HelperUtils {
       return hexResult;
     });
     // tslint:enable: no-bitwise
+  }
+
+  public static newId(): number {
+    return Math.floor(Math.random() * 999);
   }
 }

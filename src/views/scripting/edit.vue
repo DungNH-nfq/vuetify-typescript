@@ -37,7 +37,6 @@
                     v-model="data.id"
                     :error-messages="errors"
                     label="ID"
-                    disabled
                     required
                     data-cy="id"
                   ></v-text-field>

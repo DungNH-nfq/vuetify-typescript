@@ -13,9 +13,6 @@ export class HelperFiles {
       type: fileType,
     });
 
-    console.log(file.name);
-    file.text().then((res) => console.log(res));
-
     return file;
   }
 }

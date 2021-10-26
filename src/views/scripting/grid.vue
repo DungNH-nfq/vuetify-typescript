@@ -6,7 +6,8 @@
           <template v-slot:heading>
             <div
               class="display-2 font-weight-light"
-              v-text="$vuetify.lang.t('$vuetify.scripting.title_grid')" data-cy="header"
+              v-text="$vuetify.lang.t('$vuetify.scripting.title_grid')"
+              data-cy="header"
             />
           </template>
 
@@ -60,6 +61,13 @@
                       <v-divider></v-divider>
                       <div class="my-2" />
                       <v-card-text>
+                        <v-text-field
+                          v-model="functionId"
+                          label="Function ID"
+                        />
+                      </v-card-text>
+                      <div class="my-1" />
+                      <v-card-text>
                         <v-textarea
                           no-resize
                           :value="logExecuteScript"
@@ -91,8 +99,15 @@
                           text
                           @click.prevent="uploadScript"
                           data-cy="uploadBtn"
-                          >Upload</v-btn
+                          v-text="'Deploy'"
+                        />
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click.prevent="stopDeploy"
                         >
+                          Stop Deploy
+                        </v-btn>
                         <v-btn
                           color="blue darken-1"
                           text
@@ -110,7 +125,12 @@
                 <v-icon small @click="editItem(item)" data-cy="editBtn">
                   mdi-pencil
                 </v-icon>
-                <v-icon small class="mx-2" @click="deleteItem(item)" data-cy="deleteBtn">
+                <v-icon
+                  small
+                  class="mx-2"
+                  @click="deleteItem(item)"
+                  data-cy="deleteBtn"
+                >
                   mdi-delete
                 </v-icon>
                 <v-icon small @click="runScript(item)" data-cy="playBtn">
@@ -132,14 +152,13 @@ import axios from "axios";
 
 // Utilities
 import { HelperFiles } from "@/helpers/files";
-import { HelperUtils } from "@/helpers/utils";
 // Model
 import ScriptModel from "@/models/script.model";
 
-const hostAPIDefault = "http://91cd-123-19-103-56.ngrok.io";
+const hostAPIDefault = process.env.VUE_APP_API;
 const endpointToUploadScript = `/upload`;
 const endpointToGetScriptStatus = `/getfnbyid?`;
-const endPointToExcuteScript = `?`;
+const endPointToExcuteScript = `/`;
 const intervalTimeoutToCheckScriptStatus = 3000;
 const scriptStatusIsReadyToExecute = "running";
 
@@ -165,6 +184,7 @@ export default Vue.extend({
       logExecuteScript: "",
       intervalIdToCheckScriptStatus: null as any,
       isNotReadyToExecuteScript: true,
+      functionId: "",
     };
   },
   computed: {
@@ -213,6 +233,7 @@ export default Vue.extend({
     runScript(item: ScriptModel) {
       this.edittedItem = item;
       this.dialogExecute = true;
+      this.functionId = this.edittedItem.id;
     },
     closeExecuteScriptDialog() {
       this.dialogExecute = false;
@@ -236,7 +257,7 @@ export default Vue.extend({
         return;
       }
 
-      this.logExecuteScript += `- Uploaded script to server with function id is ${functionId} \n`;
+      this.logExecuteScript += `- Uploaded script to server with function id is: ${functionId} \n`;
       const isReadyToExecuteScript = await this.checkScriptIsReadyToExcute(
         functionId
       );
@@ -244,7 +265,7 @@ export default Vue.extend({
       this.isNotReadyToExecuteScript = isReadyToExecuteScript === false;
 
       if (isReadyToExecuteScript) {
-        this.logExecuteScript += `- Excuting script with function id is ${functionId}\n`;
+        this.logExecuteScript += `- Deploy container is ready to excute with function id is: ${functionId}\n`;
         return;
       }
 
@@ -257,7 +278,7 @@ export default Vue.extend({
         return "";
       }
 
-      const functionId = HelperUtils.uuidV4();
+      const functionId = this.functionId;
       const bodyFormData = new FormData();
 
       bodyFormData.append("fnid", functionId);
@@ -265,7 +286,10 @@ export default Vue.extend({
 
       const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
       const url = `${hostAPI}${endpointToUploadScript}`;
-      const headers = { "Content-Type": "multipart/form-data" };
+      const headers = {
+        "Content-Type": "multipart/form-data",
+        "Access-Control-Allow-Origin": "*",
+      };
       const method = "post";
 
       return axios({
@@ -275,11 +299,9 @@ export default Vue.extend({
         data: bodyFormData,
       })
         .then((response) => {
-          console.log({ response });
           return functionId;
         })
         .catch((error) => {
-          console.log({ error });
           return "";
         });
     },
@@ -290,18 +312,27 @@ export default Vue.extend({
           const url = `${hostAPI}${endpointToGetScriptStatus}fnid=${functionId}`;
 
           try {
-            const { container_status } = await axios.get<object, any>(url);
+            const response = await axios.get<object, any>(url);
+            const containerStatus = response?.data.container_status;
 
-            if (container_status === scriptStatusIsReadyToExecute) {
+            this.logExecuteScript += `- Check deploy status is: ${containerStatus}\n`;
+            if (
+              containerStatus === scriptStatusIsReadyToExecute ||
+              containerStatus === "created"
+            ) {
               clearInterval(this.intervalIdToCheckScriptStatus);
               resolve(true);
             }
           } catch (error) {
-            console.error(error);
+            clearInterval(this.intervalIdToCheckScriptStatus);
             resolve(false);
           }
         }, intervalTimeoutToCheckScriptStatus);
       });
+    },
+    stopDeploy() {
+      clearInterval(this.intervalIdToCheckScriptStatus);
+      this.isNotReadyToExecuteScript = false;
     },
     async excuteScript(functionId: string): Promise<void> {
       if (!functionId) {
@@ -311,13 +342,13 @@ export default Vue.extend({
 
       try {
         const hostAPI = this.edittedItem.endpoint || hostAPIDefault;
-        const url = `${hostAPI}${endPointToExcuteScript}${functionId}`;
+        const url = `${hostAPI}${endPointToExcuteScript}?fnid=${this.functionId}`;
         const response = await axios.get(url);
 
-        this.resultExecutedScript = JSON.stringify(response);
-        this.logExecuteScript += `- Excuted script with function id is ${functionId}\n`;
+        this.resultExecutedScript = JSON.stringify(response.data);
+        this.logExecuteScript += `- Excuting script with function id is: ${this.functionId}. Status is: ${response.status}\n`;
       } catch (error) {
-        this.logExecuteScript += `- Excute script have trouble. Stopped excute this script\n`;
+        this.logExecuteScript += `- Script excute have trouble. Stopped excute this script\n`;
       }
     },
   },
