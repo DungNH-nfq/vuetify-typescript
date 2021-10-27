@@ -16,8 +16,9 @@ export class ScriptingPage {
         this.clearButton = '[data-cy=clearBtn]';
         this.playButton = '[data-cy=playBtn]';
         this.uploadScriptButton = '[data-cy=uploadBtn]';
-        this.runScriptButton = '[data-cy=runScriptBtn]';
+        this.runScriptButton = '[data-cy=runBtn]';
         this.subtitle = 'div.subtitle-1.font-weight-light';
+        this.editScriptButton = '[data-cy=editBtn]';
     }
 
 
@@ -33,13 +34,13 @@ export class ScriptingPage {
         return this;
     }
 
-    addNewScripting() {
-        cy.get(this.scriptNameInput).type('This is Cypress Test');
+    addNewScripting(scriptName) {
+        cy.get(this.scriptNameInput).type(scriptName);
         // cy.get(this.scriptIDInput).type('7634567');
         cy.get(this.scriptTypeButton).click()
         cy.get(this.scriptTypeContent).eq(0).click();
         cy.get(this.scriptVersionInput).type('1');
-        cy.get(this.scriptEndpointInput).type('http://google.com');
+        // cy.get(this.scriptEndpointInput).type('http://google.com');
         cy.fixture('payload.txt').then((script) => {
             cy.get(this.scriptScriptDataInput).type(script);
         })
@@ -48,15 +49,29 @@ export class ScriptingPage {
         return this;
     }
 
-    verifyScriptDetailsInGrid(){
-        cy.get('table').contains('td', 'This is Cypress Test').should('be.visible');;
+    verifyScriptDetailsInGrid(scriptName) {
+        cy.get('table').contains('td', scriptName).should('be.visible');;
         return this;
     }
 
-    runTheScript(){
+    runTheScript() {
         cy.get(this.playButton).click();
-        cy.get(this.uploadScriptButton).click();
         cy.get(this.runScriptButton).click();
+        return this;
+    }
+
+    editScript(scriptName) {
+        cy.get('table')
+            .contains('td', scriptName)
+            .siblings()
+            .find(this.editScriptButton)
+            .click()
+        cy.get(this.scriptScriptDataInput).clear();
+        cy.fixture('payload1.txt').then((script) => {
+            cy.get(this.scriptScriptDataInput).type(script);
+        })
+        cy.get(this.submitButton).click();
+        return this;
     }
 
 }

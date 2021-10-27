@@ -66,6 +66,7 @@
                           :value="logExecuteScript"
                           rows="10"
                           label="Log Excute Script"
+                          data-cy="responeLogs"
                         />
                       </v-card-text>
                       <v-card-text style="height: 300px;">
@@ -76,6 +77,7 @@
                           rows="10"
                           label="Response"
                           :value="resultExecutedScript"
+                          data-cy="responeText"
                         />
                       </v-card-text>
                       <v-divider></v-divider>
@@ -89,7 +91,7 @@
                         <v-btn
                           color="blue darken-1"
                           @click.prevent="excuteScript"
-                          data-cy="uploadBtn"
+                          data-cy="runBtn"
                           :disabled="isRunning"
                           v-text="'Run'"
                         />
@@ -97,6 +99,7 @@
                           color="blue darken-1"
                           @click.prevent="stopDeploy"
                           :disabled="isRunning === false"
+                          data-cy="stopBtn"
                           v-text="'Stop'"
                         />
                       </v-card-actions>
