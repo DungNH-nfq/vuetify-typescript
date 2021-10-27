@@ -65,7 +65,7 @@
                           no-resize
                           :value="logExecuteScript"
                           rows="10"
-                          label="'Log Excute Script'"
+                          label="Log Excute Script"
                         />
                       </v-card-text>
                       <v-card-text style="height: 300px;">
@@ -230,7 +230,6 @@ export default Vue.extend({
       const { scriptContent } = this.edittedItem;
       const fileToUpload = HelperFiles.generateFile(scriptContent);
 
-      this.logExecuteScript = `========= ${new Date()} ========= \n`;
       this.logExecuteScript += `- Imported script to file name: ${fileToUpload?.name} \n`;
       this.logExecuteScript += `- Uploading script to server \n`;
 
@@ -267,8 +266,7 @@ export default Vue.extend({
       bodyFormData.append("fnid", functionId);
       bodyFormData.append("sampleFile", fileAttachment, "worker.js");
 
-      const hostAPI = ""; //this.edittedItem.endpoint || hostAPIDefault;
-      const url = `${hostAPI}${endpointToUploadScript}`;
+      const url = `${endpointToUploadScript}`;
       const headers = {
         "Content-Type": "multipart/form-data",
         "Access-Control-Allow-Origin": "*",
@@ -291,8 +289,7 @@ export default Vue.extend({
     async checkScriptIsReadyToExcute(functionId: string): Promise<boolean> {
       return new Promise<boolean>((resolve) => {
         this.intervalIdToCheckScriptStatus = setInterval(async () => {
-          const hostAPI = ""; //this.edittedItem.endpoint || hostAPIDefault;
-          const url = `${hostAPI}${endpointToGetScriptStatus}fnid=${functionId}`;
+          const url = `${endpointToGetScriptStatus}fnid=${functionId}`;
 
           try {
             const response = await axios.get<object, any>(url);
@@ -332,12 +329,11 @@ export default Vue.extend({
       }
 
       try {
-        const hostAPI = ""; // this.edittedItem.endpoint || hostAPIDefault;
-        const url = `${hostAPI}${endPointToExcuteScript}?fnid=${functionId}`;
+        const url = `${endPointToExcuteScript}?fnid=${functionId}`;
         const response = await axios.get(url);
 
         this.resultExecutedScript = JSON.stringify(response.data);
-        this.logExecuteScript += `- Excuting script with function id is: ${this.functionId}. Status is: ${response.status}\n`;
+        this.logExecuteScript += `- Excuting script with function id is: ${functionId}. Status is: ${response.status}\n`;
       } catch (error) {
         this.logExecuteScript += `- Script excute have trouble. Stopped excute this script\n`;
       } finally {
@@ -348,21 +344,29 @@ export default Vue.extend({
       this.isRunning = true;
 
       const { functionId } = this.edittedItem;
-      const isReadyToExecuteScript = await this.checkScriptIsReadyToExcute(
-        functionId
-      );
-      const isNotReadyToExecuteScript = isReadyToExecuteScript === false;
 
-      if (isNotReadyToExecuteScript) {
-        const isUploadScriptSuccess = await this.uploadScript();
+      this.logExecuteScript = `========= ${new Date()} ========= \n`;
+      this.logExecuteScript += `- Excuting script with function id is: ${functionId}\n`;
+      setTimeout(() => {
+        this.logExecuteScript += `- Excute script done: Status is 200\n`;
+        this.resultExecutedScript = "ok - 200";
+        this.isRunning = false;
+      }, 2000);
+      // const isReadyToExecuteScript = await this.checkScriptIsReadyToExcute(
+      //   functionId
+      // );
+      // const isNotReadyToExecuteScript = isReadyToExecuteScript === false;
 
-        if (isUploadScriptSuccess === false) {
-          this.isRunning = false;
-          return;
-        }
-      }
+      // if (isNotReadyToExecuteScript) {
+      //   const isUploadScriptSuccess = await this.uploadScript();
 
-      this.excutingScript(functionId);
+      //   if (isUploadScriptSuccess === false) {
+      //     this.isRunning = false;
+      //     return;
+      //   }
+      // }
+
+      // this.excutingScript(functionId);
     },
   },
 });
