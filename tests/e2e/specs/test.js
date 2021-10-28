@@ -15,6 +15,7 @@ describe('My First Test', () => {
       .addNewScripting(scriptName)
       .verifyScriptDetailsInGrid(scriptName)
       .editScript(scriptName)
-      .runTheScript();
+      .runTheScript()
+      .verifyResponseFromScript();
   })
 })

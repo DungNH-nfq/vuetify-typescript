@@ -1,6 +1,9 @@
-export class ScriptingPage {
+import {BasePage} from '../basePage/basePage'
+
+export class ScriptingPage extends BasePage{
 
     constructor() {
+        super();
         this.scriptingPageItem = 'div.v-list a[href="/scripting"]';
         this.pageName = '[data-cy=header]';
         this.newItemButton = 'button.primary';
@@ -19,6 +22,7 @@ export class ScriptingPage {
         this.runScriptButton = '[data-cy=runBtn]';
         this.subtitle = 'div.subtitle-1.font-weight-light';
         this.editScriptButton = '[data-cy=editBtn]';
+        this.responseText = '[data-cy=responeText]';
     }
 
 
@@ -36,11 +40,9 @@ export class ScriptingPage {
 
     addNewScripting(scriptName) {
         cy.get(this.scriptNameInput).type(scriptName);
-        // cy.get(this.scriptIDInput).type('7634567');
         cy.get(this.scriptTypeButton).click()
         cy.get(this.scriptTypeContent).eq(0).click();
-        cy.get(this.scriptVersionInput).type('1');
-        // cy.get(this.scriptEndpointInput).type('http://google.com');
+        cy.get(this.scriptVersionInput).clear().type('1');
         cy.fixture('payload.txt').then((script) => {
             cy.get(this.scriptScriptDataInput).type(script);
         })
@@ -72,6 +74,15 @@ export class ScriptingPage {
         })
         cy.get(this.submitButton).click();
         return this;
+    }
+
+    verifyResponseFromScript(){
+        cy.wait(3000)
+        .get(this.responseText)
+        .invoke('val')
+        .then(value => {
+            expect(value).to.equal('ok - 200');
+        });
     }
 
 }

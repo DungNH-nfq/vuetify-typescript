@@ -1,5 +1,8 @@
 export class BasePage {
 
+    constructor(){
+        
+    }
     checkPageUrl(url) {
         cy.url().should('contain', url);
         return this;
